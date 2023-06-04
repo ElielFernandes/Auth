@@ -12,7 +12,13 @@ public class SignUp
     
     public void Execute(InputSignUp input)
     {
-        var user = User.Create(input.Name, input.Email, input.Password);
+        var user = _userRepository.GetByEmail(input.Email);
+
+        if (user != null) {
+            throw new Exception("Sign up failed");
+        }
+        
+        user = User.Create(input.Name, input.Email, input.Password);
         _userRepository.Save(user);
     }
 }

@@ -1,13 +1,18 @@
 ﻿using Auth.Domain.Repository;
+using Auth.Domain.Service.Auth;
 
 namespace Auth.Domain.UseCase;
 
 public class Login
 {
     private readonly IUserRepository _userRepository;
+    private readonly ITokenGenerator _tokenGenerator;
 
-    public Login(IUserRepository userRepository) 
-        => _userRepository = userRepository;
+    public Login(IUserRepository userRepository, ITokenGenerator tokenGenerator)
+    {
+        _userRepository = userRepository;
+        _tokenGenerator = tokenGenerator;
+    }
     
     public LoginResponse Execute(InputLogin input)
     {
@@ -20,9 +25,14 @@ public class Login
         if (!user.Password.IsValid(input.Password)) {
             throw new Exception("Authentication failed");
         }
+        
+        var tokenGenerator = _tokenGenerator.Generate(user);
 
         return new LoginResponse() {
-            Name = user.Name
+            Name = user.Name,
+            Token = tokenGenerator,
+            Type = "Bearer",
+            ExpireIn = "7200",
         };
     }
 }
